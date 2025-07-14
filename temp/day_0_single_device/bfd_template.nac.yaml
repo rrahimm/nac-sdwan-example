@@ -1,0 +1,10 @@
+sdwan:
+  edge_feature_templates:
+    bfd_templates:
+      - name: FT-EDGE-BFD-01
+        description: BFD base template
+        poll_interval: 30000
+        multiplier: 4  # this is extra
+        colors: # this is extra
+          - color: biz-internet 
+          - color: mpls

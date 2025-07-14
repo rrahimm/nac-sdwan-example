@@ -1,0 +1,28 @@
+sdwan:
+  edge_feature_templates:
+    cli_templates:
+## Final how it will work
+      - name: FT-EDGE-CLI-BGP-BFD-01
+        description: "Edge CLI Template to disable DAUTH logs"
+        cli_config: |
+          system
+            transport-gateway enable
+          login on-failure log
+          platform console serial
+          ip bgp-community new-format
+          bfd-template single-hop test
+           interval min-tx 400 min-rx 400 multiplier 5
+          interface GigabitEthernet3
+            bfd template test
+          router bgp {{vpn10_bgp_as_number_cli}}
+          address-family ipv4 vrf 10
+           neighbor {{vpn10_bgp_ipv4_neighbor1_address_cli}} soft-reconfiguration inbound
+           neighbor {{vpn10_bgp_ipv4_neighbor1_address_cli}} fall-over bfd
+      - name: FT-EDGE-CLI-BGP
+        description: "Edge CLI Template to set BGP local AS"
+        cli_config: |
+          ! This template is using variables
+          router bgp {{bgp_as_number}}
+            address-family ipv4 unicast vrf 10
+            neighbor {{bgp_neighbor_ip}} local-as {{bgp_neighbor_local_as}}
+          !

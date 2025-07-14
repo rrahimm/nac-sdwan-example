@@ -1,0 +1,10 @@
+sdwan:
+  edge_feature_templates:
+    ethernet_interface_templates:
+# Final config VPN 11
+      - name: FT-EDGE-VPN11-LAN-IF-01
+        description: CEDGE, VPN 11, L3 DIA
+        interface_description_variable: vpn11_lan_if_description
+        interface_name_variable: vpn11_lan_if_name
+        ipv4_address_variable: vpn11_lan_if_ipv4_address
+        shutdown_variable: vpn11_lan_if_shutdown

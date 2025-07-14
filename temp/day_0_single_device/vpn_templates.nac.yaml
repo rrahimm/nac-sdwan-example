@@ -1,0 +1,23 @@
+sdwan:
+  edge_feature_templates:
+    vpn_templates:
+      - name: FT-EDGE-VPN0-STATIC-01
+        description: CEDGE VPN0 with static IP settings
+        ipv4_primary_dns_server_variable: vpn0_dns_primary # this is extra
+        ipv4_secondary_dns_server_variable: vpn0_dns_secondary # this is extra
+        enhance_ecmp_keying_variable: vpn0_layer4_ecmp_enable # this is extra
+        vpn_name: VPN0
+        vpn_id: 0
+        ipv4_static_routes: # this is extra
+          - prefix: 0.0.0.0/0
+            optional: false
+            next_hops:
+              - address_variable: vpn0_ipv4_route1_nexthop1_ip
+                distance_variable: vpn0_ipv4_route1_nexthop1_distance
+              - address_variable: vpn0_ipv4_route1_nexthop2_ip
+                distance_variable: vpn0_ipv4_route1_nexthop2_distance
+      - name: FT-EDGE-VPN512-01
+        description: CEDGE VPN512
+        vpn_name: OOB
+        vpn_id: 512
+

@@ -1,0 +1,17 @@
+sdwan:
+  edge_feature_templates:
+    ethernet_interface_templates:
+# Final config VPN 10
+      - name: FT-EDGE-VPN10-LAN-IF-01
+        description: CEDGE, VPN 10, L3 LAN
+        interface_description_variable: vpn10_lan_if_description
+        interface_name_variable: vpn10_lan_if_name
+        ipv4_address_variable: vpn10_lan_if_ipv4_address
+        shutdown_variable: vpn10_lan_if_shutdown
+# Loopback template 
+      - name: FT-EDGE-VPN10-LOOPBACK10-01
+        description: CEDGE, VPN 10, Loopback10
+        interface_description: vpn10_Lo10_MGMT
+        interface_name: Loopback10
+        ipv4_address_variable: vpn10_Lo10_if_ipv4_address
+        shutdown_variable: vpn10_Lo10_if_shutdown

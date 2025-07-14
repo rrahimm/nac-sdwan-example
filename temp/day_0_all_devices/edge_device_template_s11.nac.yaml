@@ -1,0 +1,22 @@
+sdwan:
+  edge_device_templates:
+### Final config 
+    - name: DT-BR-T2-C8000V
+      description: "Branch | OSPF "
+      device_model: C8000V
+      aaa_template: FT-EDGE-AAA-01
+      bfd_template: FT-EDGE-BFD-01
+      global_settings_template: FT-EDGE-GLOBAL-01
+      logging_template: FT-EDGE-LOGGING-01
+      omp_template: FT-EDGE-OMP-01
+      security_template: FT-EDGE-SECURITY-01
+      system_template: FT-EDGE-SYSTEM-01
+      vpn_0_template:
+        name: FT-EDGE-VPN0-STATIC-01
+        ethernet_interface_templates:
+          - name: FT-EDGE-WAN-TLOC1-PUBLIC-STATIC-01
+          - name: FT-EDGE-WAN-TLOC2-PRIVATE-STATIC-01
+      vpn_512_template:
+        name: FT-EDGE-VPN512-01
+        ethernet_interface_templates:
+          - name: FT-EDGE-VPN512-OOB-01

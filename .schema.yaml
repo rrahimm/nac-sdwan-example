@@ -1,0 +1,112 @@
+# SDWAN-as-code YAML schema (trimmed)
+sdwan: include('sdwan', required=False)
+---
+sdwan:
+  edge_feature_templates: include("edge_feature_templates", required=False)
+  edge_device_templates: list(include("edge_device_template"), required=False)
+  feature_profiles: include("feature_profiles", required=False)
+  sites: list(include("site"), required=False)
+
+edge_feature_templates:
+  aaa_templates: list(include("edge_feature_templates_aaa"), required=False)
+  vpn_templates: list(include("edge_feature_templates_vpn"), required=False)
+  bgp_templates: list(include("edge_feature_templates_bgp"), required=False)
+  ospf_templates: list(include("edge_feature_templates_ospf"), required=False)
+  ethernet_interface_templates: list(include("edge_feature_templates_ethernet_interface"), required=False)
+  omp_templates: list(include("edge_feature_templates_omp"), required=False)
+  global_settings_templates: list(include("edge_feature_templates_global_settings"), required=False)
+
+edge_feature_templates_aaa:
+  name: regex('^[^<>!&" ]{1,128}$')
+  users: list(include("edge_feature_templates_aaa_user"))
+
+edge_feature_templates_aaa_user:
+  name: str(max=64)
+  ssh_rsa_keys: list(str(), max=2, required=False)
+
+edge_feature_templates_vpn:
+  name: regex('^[^<>!&" ]{1,128}$')
+  vpn_id: int(min=0, max=65530)
+  description: str(required=False)
+  ipv4_primary_dns_server_variable: str(required=False)
+  ipv4_secondary_dns_server_variable: str(required=False)
+  enhance_ecmp_keying_variable: str(required=False)
+  ipv4_static_routes: list(include("edge_feature_templates_vpn_static_route"), required=False)
+
+edge_feature_templates_vpn_static_route:
+  prefix: str(required=False)
+  optional: bool(required=False)
+  next_hops: list(include("edge_feature_templates_vpn_static_route_nexthop"), required=False)
+
+edge_feature_templates_vpn_static_route_nexthop:
+  address_variable: str(required=False)
+  distance_variable: str(required=False)
+
+edge_feature_templates_bgp:
+  name: regex('^[^<>!&" ]{1,128}$')
+  as_number: int(min=1, max=4294967295, required=False)
+  neighbors: list(include("edge_feature_templates_bgp_neighbor"), required=False)
+
+edge_feature_templates_bgp_neighbor:
+  address: str()
+  remote_as: int(min=1, max=4294967295)
+  shutdown: bool(required=False)
+
+edge_feature_templates_ospf:
+  name: regex('^[^<>!&" ]{1,128}$')
+  router_id: str(required=False)
+  areas: list(include("edge_feature_templates_ospf_area"))
+
+edge_feature_templates_ospf_area:
+  area_number: int(min=0)
+  interfaces: list(include("edge_feature_templates_ospf_interface"))
+
+edge_feature_templates_ospf_interface:
+  name: str(required=False)
+  passive_interface: bool(required=False)
+  cost: int(required=False)
+
+edge_feature_templates_ethernet_interface:
+  name: regex('^[^<>!&" ]{1,128}$')
+  interface_name_variable: str(required=False)
+  interface_description_variable: str(required=False)
+  ipv4_address_variable: str(required=False)
+  shutdown_variable: regex('^[^"~`$&+,]{1,255}$', required=False)
+
+edge_feature_templates_omp:
+  name: regex('^[^<>!&" ]{1,128}$')
+  description: str(required=False)
+  ecmp_limit: int(required=False)
+  send_path_limit: int(required=False)
+  graceful_restart: bool(required=False)
+  graceful_restart_timer: int(required=False)
+  ipv4_advertise_protocols: list(str(), required=False)
+
+edge_feature_templates_global_settings:
+  name: regex('^[^<>!&" ]{1,128}$')
+  description: str(required=False)
+  ssh_version: int(required=False)
+  domain_lookup_variable: str(required=False)
+
+edge_device_template:
+  name: str()
+  description: str(required=False)
+  device_model: str()
+  system_template: str(required=False)
+  logging_template: str(required=False)
+  bfd_template: str(required=False)
+  omp_template: str(required=False)
+  security_template: str(required=False)
+  vpn_0_template: map(str(), any(), required=False)
+  vpn_512_template: map(str(), any(), required=False)
+  global_settings_template: str(required=False)
+
+site:
+  id: int(min=1)
+  routers: list(include("edge_router"))
+
+edge_router:
+  chassis_id: str()
+  model: str()
+  device_template: str()
+  device_variables: map(str(), any())

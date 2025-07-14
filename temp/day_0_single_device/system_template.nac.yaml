@@ -1,0 +1,12 @@
+sdwan:
+  edge_feature_templates:
+    system_templates:
+      - name: FT-EDGE-SYSTEM-01
+        description: Base Cisco System template
+        console_baud_rate: 9600
+        hostname_variable: system_hostname
+        system_ip_variable: system_ip
+        controller_groups_variable: controller_groups
+        on_demand_tunnel_variable: ondemand_tunnel_enable
+        on_demand_tunnel_idle_timeout_variable: ondemand_tunnel_idle_timeout
+        site_id_variable: site_id

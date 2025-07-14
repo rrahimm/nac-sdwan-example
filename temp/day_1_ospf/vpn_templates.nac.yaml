@@ -1,0 +1,62 @@
+sdwan:
+  edge_feature_templates:
+    vpn_templates:
+      - name: FT-EDGE-VPN0-STATIC-01
+        description: CEDGE VPN0 with static IP settings
+        ipv4_primary_dns_server_variable: vpn0_dns_primary # this is extra
+        ipv4_secondary_dns_server_variable: vpn0_dns_secondary # this is extra
+        enhance_ecmp_keying_variable: vpn0_layer4_ecmp_enable # this is extra
+        vpn_name: VPN0
+        vpn_id: 0
+        ipv4_static_routes: # this is extra
+          - prefix: 0.0.0.0/0
+            optional: false
+            next_hops:
+              - address_variable: vpn0_ipv4_route1_nexthop1_ip
+                distance_variable: vpn0_ipv4_route1_nexthop1_distance
+              - address_variable: vpn0_ipv4_route1_nexthop2_ip
+                distance_variable: vpn0_ipv4_route1_nexthop2_distance
+      - name: FT-EDGE-VPN512-01
+        description: CEDGE VPN512
+        vpn_name: OOB
+        vpn_id: 512
+      ## Final how it will look for VPN 10 BGP       
+      - name: FT-EDGE-VPN10-LAN-BGP-01
+        description: VPN 10 PROD
+        vpn_name: COPR PROD
+        vpn_id: 10
+        omp_advertise_ipv4_routes:
+          - protocol: bgp
+          - protocol: static
+          - protocol: connected
+     ## Final how it will look for VPN 10 Static
+      - name: FT-EDGE-VPN10-LAN-01
+        description: VPN 10 PROD
+        vpn_name: COPR PROD
+        vpn_id: 10
+        omp_advertise_ipv4_routes:
+          - protocol: ospf
+          - protocol: static
+          - protocol: connected
+        ipv4_static_routes:
+          - prefix_variable: vpn10_ipv4_route1_prefix
+            optional: true
+            next_hops:
+              - address_variable: vpn10_ipv4_route1_nexthop1_ip
+                distance_variable: vpn10_ipv4_route1_nexthop1_distance
+      ## Final how it will look for VPN 11 OSFP
+      - name: FT-EDGE-VPN11-LAN-01
+        description: VPN 11 DIA
+        vpn_name: Guest Area
+        vpn_id: 11
+        ipv4_static_routes:
+          - prefix_variable: vpn11_ipv4_route1_prefix
+            optional: true
+            next_hops:
+              - address_variable: vpn11_ipv4_route1_nexthop1_ip
+                distance_variable: vpn11_ipv4_route1_nexthop1_distance
+        omp_advertise_ipv4_routes:
+          - protocol: static
+          - protocol: ospf
+          - protocol: connected
+

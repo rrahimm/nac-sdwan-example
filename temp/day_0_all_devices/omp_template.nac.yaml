@@ -1,0 +1,12 @@
+sdwan:
+  edge_feature_templates:
+    omp_templates:
+      - name: FT-EDGE-OMP-01
+        description: OMP base template
+        ecmp_limit: 16
+        send_path_limit: 16
+        graceful_restart: true
+        graceful_restart_timer: 86400
+        ipv4_advertise_protocols:
+          - ospf
+          - connected

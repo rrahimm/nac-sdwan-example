@@ -1,0 +1,7 @@
+sdwan:
+  edge_feature_templates:
+    global_settings_templates:
+      - name: FT-EDGE-GLOBAL-01
+        description: Base cEdge Global Settings
+        ssh_version: 2
+        domain_lookup_variable: global_ip_domain_lookup_enable

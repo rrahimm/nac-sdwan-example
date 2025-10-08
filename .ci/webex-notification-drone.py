@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright: (c) 2022, Daniel Schmidt <danischm@cisco.com>
+# Copyright: (c) 2025, Daniel Schmidt <danischm@cisco.com>
 
 # Expects the following environment variables:
 # - WEBEX_TOKEN

@@ -3,7 +3,6 @@
 #     skip_cert_verification = true
 #   }
 # }
-
 module "sdwan" {
   source = "github.com/netascode/terraform-sdwan-nac-sdwan"
 

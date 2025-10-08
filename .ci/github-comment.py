@@ -3,19 +3,20 @@
 # Copyright: (c) 2021, Daniel Schmidt <danischm@cisco.com>
 
 # Expects the following environment variables:
-# - GITLAB_TOKEN
-# - CI_API_V4_URL
-# - CI_PROJECT_ID
-# - CI_MERGE_REQUEST_IID
+# - GITHUB_TOKEN
+# - REPO
+# - CHANGE_ID
 
 import json
 import os
 import requests
 import sys
 
+GITHUB_API_URL = "https://wwwin-github.cisco.com/api/v3/repos"
+
 
 def main():
-    if os.getenv("CI_MERGE_REQUEST_IID") in ["", None]:
+    if os.getenv("CHANGE_ID") in ["", None]:
         return
     with open("./plan.txt", "r") as in_file:
         plan = in_file.read()
@@ -24,20 +25,14 @@ def main():
     message += "\n```\n</details>\n"
 
     body = {"body": message}
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer {}".format(os.getenv("GITLAB_TOKEN")),
-    }
-    url = "{}/projects/{}/merge_requests/{}/notes".format(
-        os.getenv("GITLAB_API_URL"),
-        os.getenv("CI_PROJECT_ID"),
-        os.getenv("CI_MERGE_REQUEST_IID"),
+    headers = {"Authorization": "token {}".format(os.getenv("GITHUB_TOKEN"))}
+    url = "{}/{}/issues/{}/comments".format(
+        GITHUB_API_URL, os.getenv("REPO"), os.getenv("CHANGE_ID")
     )
     resp = requests.post(
         url,
         headers=headers,
         data=json.dumps(body),
-        verify=False
     )
     if resp.status_code not in [200, 201]:
         print(

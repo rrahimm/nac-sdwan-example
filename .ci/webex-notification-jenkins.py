@@ -1,44 +1,40 @@
 # -*- coding: utf-8 -*-
 
-# Copyright: (c) 2021, Daniel Schmidt <danischm@cisco.com>
+# Copyright: (c) 2022, Daniel Schmidt <danischm@cisco.com>
 
 # Expects the following environment variables:
 # - WEBEX_TOKEN
 # - WEBEX_ROOM_ID
-# - CI_PROJECT_ROOT_NAMESPACE
-# - CI_PROJECT_NAME
-# - CI_PIPELINE_ID
-# - CI_PIPELINE_URL
-# - CI_COMMIT_TITLE
-# - CI_PROJECT_URL
-# - CI_COMMIT_SHA
-# - GITLAB_USER_NAME
-# - CI_BUILD_REF_NAME
-# - CI_PIPELINE_SOURCE
-# - CI_JOB_URL
+# - JOB_NAME
+# - BUILD_DISPLAY_NAME
+# - RUN_DISPLAY_URL
+# - BUILD_URL
+# - GIT_COMMIT_MESSAGE
+# - GIT_URL
+# - GIT_COMMIT_AUTHOR
+# - GIT_BRANCH
+# - GIT_EVENT
+# - BUILD_STATUS
 
 import json
 import os
 import requests
-import sys
 
-
-TEMPLATE = """[**[{status}] {namespace_name}/{title} #{pipeline_id}**]({url})
+TEMPLATE = """[**[{status}] {job_name} {build}**]({url})
 * _Commit_: [{commit}]({git_url})
 * _Author_: {author}
 * _Branch_: {branch}
 * _Event_: {event}
 """.format(
-    status="success" if sys.argv[1] == "-s" else "failure",
-    namespace_name=str(os.getenv("CI_PROJECT_ROOT_NAMESPACE")),
-    title=os.getenv("CI_PROJECT_NAME"),
-    pipeline_id=os.getenv("CI_PIPELINE_ID"),
-    url=os.getenv("CI_PIPELINE_URL"),
-    commit=os.getenv("CI_COMMIT_TITLE"),
-    git_url=f"{os.getenv('CI_PROJECT_URL')}/commit/{os.getenv('CI_COMMIT_SHA')}",
-    author=os.getenv("GITLAB_USER_NAME"),
-    branch=os.getenv("CI_COMMIT_REF_NAME"),
-    event=os.getenv("CI_PIPELINE_SOURCE"),
+    status=str(os.getenv("BUILD_STATUS") or "").lower(),
+    job_name=str(os.getenv("JOB_NAME")).rsplit("/", 1)[0],
+    build=os.getenv("BUILD_DISPLAY_NAME"),
+    url=os.getenv("RUN_DISPLAY_URL"),
+    commit=os.getenv("GIT_COMMIT_MESSAGE"),
+    git_url=os.getenv("GIT_URL"),
+    author=os.getenv("GIT_COMMIT_AUTHOR"),
+    branch=os.getenv("GIT_BRANCH"),
+    event=os.getenv("GIT_EVENT"),
 )
 
 FMT_OUTPUT = """\n**Terraform FMT Errors**
@@ -49,16 +45,16 @@ VALIDATE_OUTPUT = """\n**Validate Errors**
 ```
 """
 
-PLAN_OUTPUT = """\n[**Terraform Plan**]({}/artifacts/raw/plan.txt)
+PLAN_OUTPUT = """\n[**Terraform Plan**]({})
 ```
 """.format(
-    os.getenv("CI_JOB_URL")
+    os.getenv("RUN_ARTIFACTS_DISPLAY_URL")
 )
 
-TEST_OUTPUT = """\n[**Testing**]({}/artifacts/raw/tests/results/sdwan/report.html)
+TEST_OUTPUT = """\n[**Testing**]({}artifact/tests/results/sdwan/log.html)
 ```
 """.format(
-    os.getenv("CI_JOB_URL")
+    os.getenv("BUILD_URL")
 )
 
 

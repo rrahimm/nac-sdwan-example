@@ -1,5 +1,0 @@
-sdwan:
-  edge_feature_templates:
-    logging_templates:
-      - name: FT-EDGE-LOGGING-01
-        description: Base Logging template; no TLS

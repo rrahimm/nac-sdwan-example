@@ -1,44 +1,43 @@
 # -*- coding: utf-8 -*-
 
-# Copyright: (c) 2021, Daniel Schmidt <danischm@cisco.com>
+# Copyright: (c) 2022, Daniel Schmidt <danischm@cisco.com>
 
 # Expects the following environment variables:
 # - WEBEX_TOKEN
 # - WEBEX_ROOM_ID
-# - CI_PROJECT_ROOT_NAMESPACE
-# - CI_PROJECT_NAME
-# - CI_PIPELINE_ID
-# - CI_PIPELINE_URL
-# - CI_COMMIT_TITLE
-# - CI_PROJECT_URL
-# - CI_COMMIT_SHA
-# - GITLAB_USER_NAME
-# - CI_BUILD_REF_NAME
-# - CI_PIPELINE_SOURCE
-# - CI_JOB_URL
+# - DRONE_BUILD_STATUS
+# - DRONE_REPO_OWNER
+# - DRONE_REPO_NAME
+# - DRONE_BUILD_NUMBER
+# - DRONE_BUILD_LINK
+# - DRONE_COMMIT_MESSAGE
+# - DRONE_COMMIT_LINK
+# - DRONE_COMMIT_AUTHOR_NAME
+# - DRONE_COMMIT_AUTHOR_EMAIL
+# - DRONE_COMMIT_BRANCH
+# - DRONE_BUILD_EVENT
 
 import json
 import os
 import requests
-import sys
 
-
-TEMPLATE = """[**[{status}] {namespace_name}/{title} #{pipeline_id}**]({url})
-* _Commit_: [{commit}]({git_url})
-* _Author_: {author}
-* _Branch_: {branch}
-* _Event_: {event}
+TEMPLATE = """[**[{build_status}] {repo_owner}/{repo_name} #{build_number}**]({build_link})
+* _Commit_: [{commit_message}]({commit_link})
+* _Author_: {commit_author_name} {commit_author_email}
+* _Branch_: {commit_branch}
+* _Event_:  {build_event}
 """.format(
-    status="success" if sys.argv[1] == "-s" else "failure",
-    namespace_name=str(os.getenv("CI_PROJECT_ROOT_NAMESPACE")),
-    title=os.getenv("CI_PROJECT_NAME"),
-    pipeline_id=os.getenv("CI_PIPELINE_ID"),
-    url=os.getenv("CI_PIPELINE_URL"),
-    commit=os.getenv("CI_COMMIT_TITLE"),
-    git_url=f"{os.getenv('CI_PROJECT_URL')}/commit/{os.getenv('CI_COMMIT_SHA')}",
-    author=os.getenv("GITLAB_USER_NAME"),
-    branch=os.getenv("CI_COMMIT_REF_NAME"),
-    event=os.getenv("CI_PIPELINE_SOURCE"),
+    build_status=os.getenv("DRONE_BUILD_STATUS"),
+    repo_owner=os.getenv("DRONE_REPO_OWNER"),
+    repo_name=os.getenv("DRONE_REPO_NAME"),
+    build_number=os.getenv("DRONE_BUILD_NUMBER"),
+    build_link=os.getenv("DRONE_BUILD_LINK"),
+    commit_message=os.getenv("DRONE_COMMIT_MESSAGE"),
+    commit_link=os.getenv("DRONE_COMMIT_LINK"),
+    commit_author_name=os.getenv("DRONE_COMMIT_AUTHOR_NAME"),
+    commit_author_email=os.getenv("DRONE_COMMIT_AUTHOR_EMAIL"),
+    commit_branch=os.getenv("DRONE_COMMIT_BRANCH"),
+    build_event=os.getenv("DRONE_BUILD_EVENT"),
 )
 
 FMT_OUTPUT = """\n**Terraform FMT Errors**
@@ -49,16 +48,20 @@ VALIDATE_OUTPUT = """\n**Validate Errors**
 ```
 """
 
-PLAN_OUTPUT = """\n[**Terraform Plan**]({}/artifacts/raw/plan.txt)
+PLAN_OUTPUT = """\n[**Terraform Plan**](https://engci-maven-master.cisco.com/artifactory/list/AS-release/Community/{}/{}/{}/plan.txt)
 ```
 """.format(
-    os.getenv("CI_JOB_URL")
+    os.getenv("DRONE_REPO_OWNER"),
+    os.getenv("DRONE_REPO_NAME"),
+    os.getenv("DRONE_BUILD_NUMBER"),
 )
 
-TEST_OUTPUT = """\n[**Testing**]({}/artifacts/raw/tests/results/sdwan/report.html)
+TEST_OUTPUT = """\n[**Testing**](https://engci-maven-master.cisco.com/artifactory/list/AS-release/Community/{}/{}/{}/log.html)
 ```
 """.format(
-    os.getenv("CI_JOB_URL")
+    os.getenv("DRONE_REPO_OWNER"),
+    os.getenv("DRONE_REPO_NAME"),
+    os.getenv("DRONE_BUILD_NUMBER"),
 )
 
 

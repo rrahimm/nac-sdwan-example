@@ -1,10 +1,11 @@
 ---
-image: danischm/nac:0.1.1
+image: caf-sac/nac:1.0.0
 stages:
   - validate
   - plan
   - deploy
   - test
+  - test_on_demand
   - notify
 
 variables:
@@ -21,10 +22,8 @@ variables:
     description: "User Access Token. Used to create comments on Merge Requests"
   TF_HTTP_USERNAME:
     description: "GitLab Username"
-    value: "gitlab-ci-token"
   TF_HTTP_PASSWORD:
     description: "GitLab Access Token"
-    value: "${CI_JOB_TOKEN}"
   WEBEX_ROOM_ID:
     description: "Cisco Webex Room ID"
   WEBEX_TOKEN:
@@ -47,8 +46,7 @@ variables:
   TF_HTTP_UNLOCK_METHOD:
     description: "Method to unlock TF state file"
     value: DELETE
-  SSL_CERT_DIR:
-    value: "/etc/gitlab-runner/ssl"
+
 
 cache:
   key: terraform_modules_and_lock
@@ -59,8 +57,8 @@ cache:
 validate:
   stage: validate
   script:
-    - set -o pipefail && terraform fmt |& tee fmt_output.txt
-    - set -o pipefail && iac-validate --non-strict ./data/ |& tee validate_output.txt
+    - set -o pipefail && terraform fmt -check |& tee fmt_output.txt
+    - set -o pipefail && iac-validate ./data/ --non-strict |& tee validate_output.txt
   artifacts:
     when: always
     paths:
@@ -68,7 +66,7 @@ validate:
       - validate_output.txt
   cache: []
   rules:
-    - if: $CI_COMMIT_TAG == null
+    - if: $CI_COMMIT_TAG == null && $CI_PIPELINE_SOURCE != "schedule"
 
 plan:
   stage: plan
@@ -79,7 +77,7 @@ plan:
     - terraform show -no-color plan.tfplan > plan.txt
     - terraform show -json plan.tfplan | jq > plan.json
     - terraform show -json plan.tfplan | jq '([.resource_changes[]?.change.actions?]|flatten)|{"create":(map(select(.=="create"))|length),"update":(map(select(.=="update"))|length),"delete":(map(select(.=="delete"))|length)}' > plan_gitlab.json
-    #- python3 .ci/gitlab-comment.py
+    - python3 .ci/gitlab-comment.py
   artifacts:
     when: always
     paths:
@@ -92,37 +90,15 @@ plan:
   dependencies: []
   needs:
     - validate
-  only:
-    - merge_requests
-    - main
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_BRANCH =="master"
 
 deploy:
   stage: deploy
   resource_group: sdwan
   script:
-  - |
-    echo "Starting the deployment process..."
-    MAX_RETRIES=6
-    COUNTER=0
-    while [ $COUNTER -lt $MAX_RETRIES ]; do
-      echo "Running terraform plan... (Attempt: $((COUNTER + 1)))"
-      terraform plan -out=plan.tfplan  -input=false
-      terraform show -json plan.tfplan | jq '([.resource_changes[]?.change.actions?]|flatten)|{"create":(map(select(.=="create"))|length),"update":(map(select(.=="update"))|length),"delete":(map(select(.=="delete"))|length)}' > plan_gitlab.json
-      result=$(cat plan_gitlab.json | jq -r '.create >= 1 or .update >= 1')
-      if [ "$result" = true ]; then
-        echo "Changes to apply."
-        terraform apply -input=false -auto-approve plan.tfplan |& tee -a deploy_output.txt
-      else 
-        echo "No changes to apply."
-        break
-      fi
-      COUNTER=$((COUNTER+1))
-    done 
-    if [ $COUNTER -eq $MAX_RETRIES ]; then
-      echo "Reached maximum number of apply attempts without reaching a stable state."
-      exit 1
-    fi
-    echo "Deployment process finished." 
+    - terraform init -input=false
+    - terraform apply -input=false -auto-approve plan.tfplan
   artifacts:
     when: always
     paths:
@@ -131,13 +107,13 @@ deploy:
     - plan
   needs:
     - plan
-  only:
-    - main
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_BRANCH =="master"
 
 test-integration:
   stage: test
   script:
-    - set -o pipefail && iac-test -d ./data -d ./defaults.yaml -t ./tests/templates -o ./tests/results/sdwan |& tee test_output.txt
+    - set -o pipefail && iac-test --data ./data --data ./defaults.yaml --templates ./tests/templates -o ./tests/results/sdwan |& tee test_output.txt
   artifacts:
     when: always
     paths:
@@ -150,21 +126,36 @@ test-integration:
     - deploy
   needs:
     - deploy
-  only:
-    - main
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_BRANCH =="master"
 
-# test-idempotency:
-#   stage: test
-#   resource_group: sdwan
-#   script:
-#     - terraform init -input=false
-#     - terraform plan -input=false -detailed-exitcode
-#   dependencies:
-#     - deploy
-#   needs:
-#     - deploy
-#   only:
-#     - main
+test-integration-manual:
+  stage: test_on_demand
+  script:
+    - set -o pipefail && iac-test --data ./data --data ./default/defaults.yaml --templates ./tests/templates -o ./tests/results/sdwan |& tee test_output.txt
+  artifacts:
+    when: always
+    paths:
+      - tests/results/sdwan/*.html
+      - tests/results/sdwan/xunit.xml
+      - test_output.txt
+    reports:
+      junit: tests/results/sdwan/xunit.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+
+test-idempotency:
+  stage: test
+  resource_group: sdwan
+  script:
+    - terraform init -input=false
+    - terraform plan -input=false -detailed-exitcode
+  dependencies:
+    - deploy
+  needs:
+    - deploy
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_BRANCH =="master"
 
 failure:
   stage: notify

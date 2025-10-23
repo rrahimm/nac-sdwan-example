@@ -1,6 +1,0 @@
-sdwan:
-  edge_feature_templates:
-    security_templates:
-      - name: FT-EDGE-SECURITY-01
-        description: Base SD-WAN data-plane security
-        rekey_interval: 172800

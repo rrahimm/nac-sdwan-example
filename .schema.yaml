@@ -1,112 +1,79 @@
-# SDWAN-as-code YAML schema (trimmed)
+# SDWAN-as-code YAML schema
 sdwan: include('sdwan', required=False)
 ---
 sdwan:
-  edge_feature_templates: include("edge_feature_templates", required=False)
-  edge_device_templates: list(include("edge_device_template"), required=False)
-  feature_profiles: include("feature_profiles", required=False)
-  sites: list(include("site"), required=False)
-
-edge_feature_templates:
-  aaa_templates: list(include("edge_feature_templates_aaa"), required=False)
-  vpn_templates: list(include("edge_feature_templates_vpn"), required=False)
-  bgp_templates: list(include("edge_feature_templates_bgp"), required=False)
-  ospf_templates: list(include("edge_feature_templates_ospf"), required=False)
-  ethernet_interface_templates: list(include("edge_feature_templates_ethernet_interface"), required=False)
-  omp_templates: list(include("edge_feature_templates_omp"), required=False)
-  global_settings_templates: list(include("edge_feature_templates_global_settings"), required=False)
-
-edge_feature_templates_aaa:
-  name: regex('^[^<>!&" ]{1,128}$')
-  users: list(include("edge_feature_templates_aaa_user"))
-
-edge_feature_templates_aaa_user:
-  name: str(max=64)
-  ssh_rsa_keys: list(str(), max=2, required=False)
-
-edge_feature_templates_vpn:
-  name: regex('^[^<>!&" ]{1,128}$')
-  vpn_id: int(min=0, max=65530)
-  description: str(required=False)
-  ipv4_primary_dns_server_variable: str(required=False)
-  ipv4_secondary_dns_server_variable: str(required=False)
-  enhance_ecmp_keying_variable: str(required=False)
-  ipv4_static_routes: list(include("edge_feature_templates_vpn_static_route"), required=False)
-
-edge_feature_templates_vpn_static_route:
-  prefix: str(required=False)
-  optional: bool(required=False)
-  next_hops: list(include("edge_feature_templates_vpn_static_route_nexthop"), required=False)
-
-edge_feature_templates_vpn_static_route_nexthop:
-  address_variable: str(required=False)
-  distance_variable: str(required=False)
-
-edge_feature_templates_bgp:
-  name: regex('^[^<>!&" ]{1,128}$')
-  as_number: int(min=1, max=4294967295, required=False)
-  neighbors: list(include("edge_feature_templates_bgp_neighbor"), required=False)
-
-edge_feature_templates_bgp_neighbor:
-  address: str()
-  remote_as: int(min=1, max=4294967295)
-  shutdown: bool(required=False)
-
-edge_feature_templates_ospf:
-  name: regex('^[^<>!&" ]{1,128}$')
-  router_id: str(required=False)
-  areas: list(include("edge_feature_templates_ospf_area"))
-
-edge_feature_templates_ospf_area:
-  area_number: int(min=0)
-  interfaces: list(include("edge_feature_templates_ospf_interface"))
-
-edge_feature_templates_ospf_interface:
-  name: str(required=False)
-  passive_interface: bool(required=False)
-  cost: int(required=False)
-
-edge_feature_templates_ethernet_interface:
-  name: regex('^[^<>!&" ]{1,128}$')
-  interface_name_variable: str(required=False)
-  interface_description_variable: str(required=False)
-  ipv4_address_variable: str(required=False)
-  shutdown_variable: regex('^[^"~`$&+,]{1,255}$', required=False)
-
-edge_feature_templates_omp:
-  name: regex('^[^<>!&" ]{1,128}$')
-  description: str(required=False)
-  ecmp_limit: int(required=False)
-  send_path_limit: int(required=False)
-  graceful_restart: bool(required=False)
-  graceful_restart_timer: int(required=False)
-  ipv4_advertise_protocols: list(str(), required=False)
-
-edge_feature_templates_global_settings:
-  name: regex('^[^<>!&" ]{1,128}$')
-  description: str(required=False)
-  ssh_version: int(required=False)
-  domain_lookup_variable: str(required=False)
-
-edge_device_template:
+  policy_objects: include("policy_objects", required=False)
+  centralized_policies: include("centralized_policies", required=False)
+policy_objects:
+  application_lists: list(include("policy_objects_application_list"), required=False)
+  sla_classes: list(include("policy_objects_sla_class"), required=False)
+policy_objects_application_list:
+  name: regex('^[A-Za-z0-9-_]{1,128}$')
+  applications: list(str(), required=False)
+  application_families: list(enum("application-service", "audio-video", "authentication", "behavioral", "database", "encrypted", "erp", "file-server", "file-transfer", "forum", "game", "instant-messaging", "mail", "microsoft-office", "middleware", "network-management", "network-service", "peer-to-peer", "printer", "routing", "security-service", "terminal", "thin-client", "tunneling", "web", "webmail"), required=False)
+policy_objects_sla_class:
+  name: regex('^[A-Za-z0-9-_]{1,128}$')
+  jitter_ms: int(min=1, max=1000, required=False)
+  latency_ms: int(min=1, max=1000, required=False)
+  loss_percentage: int(min=1, max=100, required=False)
+  app_probe_class: regex('^[^<>!&$@\\\/"() ]{1,128}$', required=False)
+  fallback_best_tunnel_criteria: enum("loss", "latency", "jitter", "loss-latency", "loss-jitter", "latency-loss", "latency-jitter", "jitter-latency", "jitter-loss", "loss-latency-jitter", "loss-jitter-latency", "latency-loss-jitter", "latency-jitter-loss", "jitter-latency-loss", "jitter-loss-latency", required=False)
+  fallback_best_tunnel_jitter: int(min=1, max=1000, required=False)
+  fallback_best_tunnel_latency: int(min=1, max=1000, required=False)
+  fallback_best_tunnel_loss: int(min=1, max=100, required=False)
+centralized_policies:
+  definitions: include("centralized_policy_definitions", required=False)
+centralized_policy_definitions:
+  data_policy: include("centralized_policy_data", required=False)
+centralized_policy_data:
+  application_aware_routing: list(include("centralized_policy_application_aware_routing"), required=False)
+centralized_policy_application_aware_routing:
+  name: regex('^[A-Za-z0-9\-_]{1,127}$')
+  description: str()
+  default_action_type: include("centralized_policy_application_aware_routing_default_action_type", required=False)
+  sequences: list(include("centralized_policy_application_aware_routing_app_route"))
+centralized_policy_application_aware_routing_default_action_type:
+  none: bool(required=False)
+  sla_class_list: any(enum("default", "transactional_data", "business_data", "bulk_data", "business_critical"), str(), required=False)
+centralized_policy_application_aware_routing_app_route:
+  id: int(min=1, max=65534)
   name: str()
-  description: str(required=False)
-  device_model: str()
-  system_template: str(required=False)
-  logging_template: str(required=False)
-  bfd_template: str(required=False)
-  omp_template: str(required=False)
-  security_template: str(required=False)
-  vpn_0_template: map(str(), any(), required=False)
-  vpn_512_template: map(str(), any(), required=False)
-  global_settings_template: str(required=False)
-
-site:
-  id: int(min=1)
-  routers: list(include("edge_router"))
-
-edge_router:
-  chassis_id: str()
-  model: str()
-  device_template: str()
-  device_variables: map(str(), any())
+  ip_type: enum("ipv4", "ipv6", "all", required=False)
+  type: str(equals="app_route", required=False)
+  match_criterias: include("centralized_policy_application_aware_routing_app_route_match_criterias", required=False)
+  actions: include("centralized_policy_application_aware_routing_app_route_actions", required=False)
+centralized_policy_application_aware_routing_app_route_match_criterias:
+  application_list: regex('^[A-Za-z0-9\-_]{1,32}$', required=False)
+  cloud_saas_application_list: regex('^[A-Za-z0-9\-_]{1,32}$', required=False)
+  dns_application_list: regex('^[A-Za-z0-9\-_]{1,32}$', required=False)
+  dns: enum("request", "response", required=False)
+  dscp: int(min=0, max=63, required=False)
+  plp: enum("low","high", required=False)
+  protocols: list(int(min=0, max=255), required=False)
+  source_data_prefix_list: regex('^[A-Za-z0-9\-_]{1,32}$', required=False)
+  source_data_prefix: str(required=False)
+  source_ports: list(int(min=0, max=65535), required=False)
+  source_port_ranges: list(include("centralized_policy_application_aware_routing_app_route_match_source_port_ranges"), required=False)
+  destination_data_prefix_list: regex('^[A-Za-z0-9\-_]{1,32}$', required=False)
+  destination_data_prefix: str(required=False)
+  destination_ports: list(int(min=0, max=65535), required=False)
+  destination_port_ranges: list(include("centralized_policy_application_aware_routing_app_route_match_destination_port_ranges"), required=False)
+  traffic_to: enum("access","core","service", required=False)
+  destination_region: enum("primary-region", "secondary-region", "other-region", required=False)
+centralized_policy_application_aware_routing_app_route_match_source_port_ranges:
+  from: int(min=0, max=65535)
+  to: int(min=0, max=65535)
+centralized_policy_application_aware_routing_app_route_match_destination_port_ranges:
+  from: int(min=0, max=65535)
+  to: int(min=0, max=65535)
+centralized_policy_application_aware_routing_app_route_actions:
+  counter_name: regex('^[A-Za-z0-9\-_]{1,20}$', required=False)
+  log: bool(required=False)
+  backup_sla_preferred_colors: list(enum("default", "mpls", "metro-ethernet", "biz-internet", "public-internet", "lte", "3g", "red", "green", "blue", "gold", "silver", "bronze", "custom1", "custom2", "custom3", "private1", "private2", "private3", "private4", "private5", "private6"), required=False)
+  cloud_sla: bool(required=False)
+  sla_class_list: include("centralized_policy_application_aware_routing_app_route_action_sla_class_list", required=False)
+centralized_policy_application_aware_routing_app_route_action_sla_class_list:
+  sla_class_list: regex('^[A-Za-z0-9\-_]{1,32}$')
+  preferred_colors: list(enum("default", "mpls", "metro-ethernet", "biz-internet", "public-internet", "lte", "3g", "red", "green", "blue", "gold", "silver", "bronze", "custom1", "custom2", "custom3", "private1", "private2", "private3", "private4", "private5", "private6"), required=False)
+  preferred_color_group: regex('^[A-Za-z0-9\-_]{1,32}$', required=False)
+  when_sla_not_met: enum("strict_drop", "fallback_to_best_path", "load_balance", required=False)
